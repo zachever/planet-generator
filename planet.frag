@@ -11,13 +11,16 @@ vec3 colorOff = vec3(0.0, 0.0, 0.0);
 
 void main() {
 
-    gl_FragColor = vec4(colorOff, 1.0);
+    fragColor = vec4(colorOff, 1.0);
 
     vec2 uv = gl_FragCoord.xy / iResolution.xy;
     vec2 p  = (2.0 * gl_FragCoord.xy - iResolution) / iResolution.y;
 
+    float z = sqrt(1 - p.x * p.x - p.y * p.y);
+    vec3 pos = vec3(p, z);
+
     float maxDist = 0.7;
     if (maxDist * maxDist > p.x * p.x + p.y * p.y) {
-        gl_FragColor = vec4(colorOn, 1.0);
+        fragColor = vec4(pos, 1.0);
     }
 }
