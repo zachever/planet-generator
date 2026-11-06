@@ -8,6 +8,7 @@ import pygame
  
 W, H = 800, 800
 FRAG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "planet.frag")
+UTILS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils.glsl")
 
 # simply render a quad to allow fragment shader to run for each pixel
 VERT = """
@@ -22,7 +23,7 @@ pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG, True)
 pygame.display.set_mode((W, H), pygame.OPENGL | pygame.DOUBLEBUF)
-pygame.display.set_caption("planet shader  |  R = new seed")
+pygame.display.set_caption("Planet Generator")
  
 ctx = moderngl.create_context()
  
@@ -31,8 +32,12 @@ vbo = ctx.buffer(quad.tobytes())
  
  
 def load_shader():
+    with open(UTILS_PATH) as f:
+        utils_src = f.read()
     with open(FRAG_PATH) as f:
-        src = f.read()
+        frag_src = f.read()
+
+    src = utils_src + "\n" + frag_src
     prog = ctx.program(vertex_shader=VERT, fragment_shader=src)
     vao = ctx.vertex_array(prog, [(vbo, "2f", "in_pos")])
     return prog, vao
@@ -47,6 +52,7 @@ def set_uniform(prog, name, value):
 def render():
     prog, vao = load_shader()
     mtime = os.path.getmtime(FRAG_PATH)
+    random.seed(0)
     seed = random.random() * 100.0
     start = time.time()
     clock = pygame.time.Clock()
