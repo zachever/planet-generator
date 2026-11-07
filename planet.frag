@@ -2,19 +2,30 @@ uniform vec2 iResolution;
 uniform float iTime;
 uniform float seed;
 
-int pixelCount = 80;
+//general settings
+int pixelCount = 100;
+
+//planet settings
 float radius = 0.7;
+
+//cloud settings
 float cloudRadius = 0.75;
-float cloudCoverage = 0.3;
+float cloudCoverage = 0.5;
+float cloudRotationsPerSecond = 0.015;
+float cloudDriftPerSecond = 0.05;
+
+//surface settings
 float waterCoverage = 0.5;
+float sandCoverage = 0.02;
 float rotationsPerSecond = 0.01;
 
 out vec4 fragColor;
 
 vec3 space = vec3(0.0, 0.0, 0.0);
 vec3 ocean = vec3(0.0, 0.3, 0.6);
+vec3 sand = vec3(0.8, 0.7, 0.5);
 vec3 land = vec3(0.1, 0.6, 0.2);
-vec3 cloud = vec3(1.0, 1.0, 1.0);
+vec4 cloud = vec4(1.0, 1.0, 1.0, 0.8);
 
 void main() {
 
@@ -30,13 +41,15 @@ void main() {
     float z = sqrt(radius * radius - p.x * p.x - p.y * p.y);
     vec3 pos = vec3(p, z) / radius;
 
-    pos = rotY(iTime * rotationsPerSecond * 2 * 3.14159265358979323846264338327950) * pos;
+    pos = rotY(-iTime * rotationsPerSecond * 2 * 3.14159265358979323846264338327950) * pos;
 
     bool isInsidePlanet = radius * radius > p.x * p.x + p.y * p.y;
     if (isInsidePlanet) {
         float h = fbm(pos * 2.5 + seed);
         if(h < waterCoverage)
             fragColor = vec4(ocean, 1.0);
+        else if(h < waterCoverage + sandCoverage)
+            fragColor = vec4(sand, 1.0);
         else
             fragColor = vec4(land, 1.0);
 
@@ -44,21 +57,25 @@ void main() {
 
     z = sqrt(cloudRadius * cloudRadius - p.x * p.x - p.y * p.y);
     vec3 cloudPos = vec3(p, z) / cloudRadius;
-    cloudPos = rotY(iTime * rotationsPerSecond * 2 * 3.14159265358979323846264338327950) * cloudPos;
+    cloudPos = rotY(-iTime * cloudRotationsPerSecond * 2 * 3.14159265358979323846264338327950) * cloudPos;
+    cloudPos += vec3(0.0, 0.0, iTime * cloudDriftPerSecond);
 
     bool isInsideCloud = cloudRadius * cloudRadius > p.x * p.x + p.y * p.y;
     if (isInsideCloud) {
         
-        float h = fbm(cloudPos * 2.5 + seed);
-        if(h < cloudCoverage)
-            fragColor = vec4(cloud, 1.0);
-
+        float h = fbm(cloudPos * 2.5 + seed + 1);
+        if(h < cloudCoverage) {
+            vec3 rgb = mix(fragColor.rgb, cloud.rgb, cloud.a);
+            fragColor = vec4(rgb, 1.0);
+        }
         if(!isInsidePlanet) {
-            vec3 tempPos = vec3(p, -z);
-            tempPos = rotY(iTime * rotationsPerSecond * 2 * 3.14159265358979323846264338327950) * tempPos;
-            h = fbm(tempPos * 2.5 + seed);
-            if(h < cloudCoverage)
-                fragColor = vec4(cloud, 1.0);
+            vec3 tempPos = vec3(p, -z) / cloudRadius;
+            tempPos = rotY(-iTime * cloudRotationsPerSecond * 2 * 3.14159265358979323846264338327950) * tempPos;
+            h = fbm(tempPos * 2.5 + seed + 1);
+            if(h < cloudCoverage) {
+                vec3 rgb = mix(fragColor.rgb, cloud.rgb, cloud.a);
+                fragColor = vec4(rgb, 1.0);
+            }
         }
     }
 }
