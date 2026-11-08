@@ -1,5 +1,5 @@
 from loader import render
 
-MODE = "saved-planets/planet_1.png"
+MODE = "random"
 
 render(MODE)

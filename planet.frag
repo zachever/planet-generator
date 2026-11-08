@@ -34,6 +34,9 @@ uniform vec3 sand  = vec3(0.8, 0.7, 0.5);
 uniform vec3 land  = vec3(0.1, 0.6, 0.2);
 uniform vec4 cloud = vec4(1.0, 1.0, 1.0, 0.8);
 
+//useful for screenshots with custom lighting
+uniform vec3 lightingOverride = vec3(0.0, 0.0, 0.0);
+
 out vec4 fragColor;
 
 void main() {
@@ -91,6 +94,9 @@ void main() {
 
     vec3 lightDirection = normalize(vec3(1.0, 0.3, 0.3));
     lightDirection = mat3(rotY(-iTime * lightRotationPerSecond * 2 * 3.14159265358979323846264338327950)) * lightDirection;
+
+    if(lightingOverride != vec3(0.0, 0.0, 0.0))
+        lightDirection = normalize(lightingOverride);
 
     pos = vec3(p, z) / radius;
     vec3 normal = normalize(pos);

@@ -12,19 +12,27 @@ def generate_random_planet(seed=None):
         palette = f.read()
         palette = palette.splitlines()
         print(palette)
+
+    size = 1 + 5 * random.random() ** 3
+
+    radius = random.random() * 0.2 + 0.65
+    cloudRadius = random.random() * 0.12 + radius
+
+    rotations_per_second = random.random() * 0.02 + 0.01
     settings = {
         "pixelCount": 100,
-        "size": 3.0,
-        "radius": 0.7,
-        "cloudRadius": 0.8,
-        "cloudCoverage": 0.5,
-        "cloudRotationsPerSecond": 0.015,
-        "cloudDriftPerSecond": 0.05,
-        "waterCoverage": 0.5,
-        "sandCoverage": 0.02,
-        "rotationsPerSecond": 0.01,
+        "seed": random.random() * 100.0,
+        "size": size,
+        "radius": radius,
+        "cloudRadius": cloudRadius,
+        "cloudCoverage": 0.0 if random.random() < 0.5 else random.random() * 0.2 + 0.3,
+        "cloudRotationsPerSecond": rotations_per_second + random.random() * 0.02,
+        "cloudDriftPerSecond": random.random() * 0.1,
+        "waterCoverage": random.random() * 0.2 + 0.3,
+        "sandCoverage": random.random() * 0.2,
+        "rotationsPerSecond": rotations_per_second,
         "ambientLight": 0.05,
-        "lightRotationPerSecond": 0.01,
+        "lightRotationPerSecond": random.random() * 0.02 + 0.005,
         "bands": True,
         "ditherAmount": 0.5,
         "lightBooster": 0.2,

@@ -24,6 +24,7 @@ void main() { gl_Position = vec4(in_pos, 0.0, 1.0); }
 
 DEFAULT_SETTINGS = {
     # general
+    "seed": 0,
     "pixelCount": 100,
  
     # planet
@@ -86,18 +87,20 @@ def set_uniform(prog, name, value):
     if name in prog:
         prog[name].value = value
  
-def capture_planet(prog, vao, clock, force_lighting=False):
+def capture_planet(prog, vao, force_lighting=False):
     #set custom photos so that the screenshot
     if force_lighting:
         set_uniform(prog, "iTime", 0)
-
+        set_uniform(prog, "lightingOverride", (0.4, 0.3, 1.0))
         ctx.clear()
         vao.render(moderngl.TRIANGLE_STRIP)
-        pygame.display.flip()
         #clock.tick(60)
 
     data = ctx.screen.read(viewport=(0, 0, W, H), components=3)
     image = Image.frombytes("RGB", (W, H), data)
+
+    set_uniform(prog, "lightingOverride", (0.0, 0.0, 0.0))
+
     return image.transpose(Image.FLIP_TOP_BOTTOM)
 
 
@@ -113,8 +116,7 @@ def render(mode="default"):
 
     prog, vao = load_shader()
     mtime = os.path.getmtime(FRAG_PATH)
-    random.seed(0)
-    seed = random.random() * 100.0
+    random.seed(settings["seed"])
     start = time.time()
     clock = pygame.time.Clock()
     running = True
@@ -128,10 +130,13 @@ def render(mode="default"):
                 elif e.key == pygame.K_SPACE:
                     settings = generate_random_planet()
                 elif e.key == pygame.K_s:
-                    screenshot = capture_planet(prog, vao, clock)
+                    screenshot = capture_planet(prog, vao, force_lighting=True)
+                    save_planet_to_file(settings, screenshot)
+                elif e.key == pygame.K_c:
+                    screenshot = capture_planet(prog, vao)
                     save_planet_to_file(settings, screenshot)
                 elif e.key == pygame.K_r:
-                    seed = random.random() * 100.0
+                    settings["seed"] = random.random() * 100.0
     
         m = os.path.getmtime(FRAG_PATH)
         if m != mtime:
@@ -144,7 +149,7 @@ def render(mode="default"):
     
         set_uniform(prog, "iResolution", (float(W), float(H)))
         set_uniform(prog, "iTime", time.time() - start)
-        set_uniform(prog, "seed", seed)
+        set_uniform(prog, "seed", settings["seed"])
         for name, value in settings.items():
             set_uniform(prog, name, value)
     
