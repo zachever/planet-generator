@@ -5,8 +5,13 @@ import time
 import moderngl
 import numpy as np
 import pygame
+import io
+from PIL import Image
+
+from generator import generate_random_planet
+from save_system import load_planet_from_file, save_planet_to_file
  
-W, H = 800, 800
+W, H = 1000, 1000
 FRAG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "planet.frag")
 UTILS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils.glsl")
 
@@ -17,15 +22,16 @@ in vec2 in_pos;
 void main() { gl_Position = vec4(in_pos, 0.0, 1.0); }
 """
 
-SETTINGS = {
+DEFAULT_SETTINGS = {
     # general
     "pixelCount": 100,
  
     # planet
-    "radius": 0.7,
+    "size": 1.0, #overall size of the planet, does not alter size on screen, but rather alters internal scale so biomes are smaller given a larger planet
+    "radius": 0.7, #mostly just for how large of portion planet takes on screen, 1.0 means planet sides touch edges of screen
  
     # clouds
-    "cloudRadius": 0.75,
+    "cloudRadius": 0.75, #mostly just for how large of portion clouds takes on screen, 1.0 means clouds touch edges of screen
     "cloudCoverage": 0.5,
     "cloudRotationsPerSecond": 0.015,
     "cloudDriftPerSecond": 0.05,
@@ -80,11 +86,31 @@ def set_uniform(prog, name, value):
     if name in prog:
         prog[name].value = value
  
- 
+def capture_planet(prog, vao, clock, force_lighting=False):
+    #set custom photos so that the screenshot
+    if force_lighting:
+        set_uniform(prog, "iTime", 0)
 
-def render(settings=None):
-    if settings is None:
-        settings = SETTINGS
+        ctx.clear()
+        vao.render(moderngl.TRIANGLE_STRIP)
+        pygame.display.flip()
+        #clock.tick(60)
+
+    data = ctx.screen.read(viewport=(0, 0, W, H), components=3)
+    image = Image.frombytes("RGB", (W, H), data)
+    return image.transpose(Image.FLIP_TOP_BOTTOM)
+
+
+def render(mode="default"):
+    if mode == "default":
+        settings = DEFAULT_SETTINGS
+    
+    elif mode == "random":
+        settings = generate_random_planet()
+    
+    else:
+        settings = load_planet_from_file(mode)
+
     prog, vao = load_shader()
     mtime = os.path.getmtime(FRAG_PATH)
     random.seed(0)
@@ -99,6 +125,11 @@ def render(settings=None):
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     running = False
+                elif e.key == pygame.K_SPACE:
+                    settings = generate_random_planet()
+                elif e.key == pygame.K_s:
+                    screenshot = capture_planet(prog, vao, clock)
+                    save_planet_to_file(settings, screenshot)
                 elif e.key == pygame.K_r:
                     seed = random.random() * 100.0
     

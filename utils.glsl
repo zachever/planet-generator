@@ -21,10 +21,10 @@ float noise(vec3 x) {
                    mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
 }
 
-float fbm(vec3 p) {
+float fbm(vec3 p, float size) {
     float v = 0.0, a = 0.5;
     for (int i = 0; i < 6; i++) {
-        v += a * noise(p);
+        v += a * noise(p * size);
         p *= 2.0;
         a *= 0.5;
     }
