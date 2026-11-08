@@ -1,5 +1,5 @@
 from loader import render
 
-MODE = "default"
+MODE = "showcase-planets/images/planet_47.png"
 
 render(MODE)
