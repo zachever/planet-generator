@@ -1,5 +1,5 @@
 from loader import render
 
-MODE = "random"
+MODE = "default"
 
 render(MODE)

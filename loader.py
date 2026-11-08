@@ -33,7 +33,7 @@ DEFAULT_SETTINGS = {
  
     # clouds
     "cloudRadius": 0.75, #mostly just for how large of portion clouds takes on screen, 1.0 means clouds touch edges of screen
-    "cloudCoverage": 0.5,
+    "cloudCoverage": 0.4,
     "cloudRotationsPerSecond": 0.015,
     "cloudDriftPerSecond": 0.05,
  
@@ -103,6 +103,20 @@ def capture_planet(prog, vao, force_lighting=False):
 
     return image.transpose(Image.FLIP_TOP_BOTTOM)
 
+def export_gif(ctx, prog, vao, path, frames=240, frame_ms=50, scale=0.4):
+    images = []
+    for i in range(frames):
+        set_uniform(prog, "iTime", i * frame_ms / 1000 + 5)
+        ctx.clear()
+        vao.render(moderngl.TRIANGLE_STRIP)
+
+        data = ctx.screen.read(viewport=(0, 0, W, H), components=3)
+        img = Image.frombytes("RGB", (W, H), data).transpose(Image.FLIP_TOP_BOTTOM)
+        img = img.resize((int(W * scale), int(H * scale)), Image.NEAREST)
+        images.append(img.quantize(colors=32, dither=Image.Dither.NONE))
+
+    images[0].save(path, save_all=True, append_images=images[1:], duration=frame_ms, loop=0, disposal=2, optimize=True)
+
 
 def render(mode="default"):
     if mode == "default":
@@ -135,6 +149,8 @@ def render(mode="default"):
                 elif e.key == pygame.K_c:
                     screenshot = capture_planet(prog, vao)
                     save_planet_to_file(settings, screenshot)
+                elif e.key == pygame.K_g:
+                    export_gif(ctx, prog, vao, "planet.gif")
                 elif e.key == pygame.K_r:
                     settings["seed"] = random.random() * 100.0
     
