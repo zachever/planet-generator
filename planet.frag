@@ -3,36 +3,37 @@ uniform float iTime;
 uniform float seed;
 
 //general settings
-int pixelCount = 100;
+uniform int pixelCount = 100;
 
 //planet settings
-float radius = 0.7;
+uniform float radius = 0.7;
 
 //cloud settings
-float cloudRadius = 0.75;
-float cloudCoverage = 0.5;
-float cloudRotationsPerSecond = 0.015;
-float cloudDriftPerSecond = 0.05;
+uniform float cloudRadius = 0.75;
+uniform float cloudCoverage = 0.5;
+uniform float cloudRotationsPerSecond = 0.015;
+uniform float cloudDriftPerSecond = 0.05;
 
 //surface settings
-float waterCoverage = 0.5;
-float sandCoverage = 0.02;
-float rotationsPerSecond = 0.01;
+uniform float waterCoverage = 0.5;
+uniform float sandCoverage = 0.02;
+uniform float rotationsPerSecond = 0.01;
 
 //light settings
-float ambientLight = 0.05;
-float lightRotationPerSecond = 0.01;
-bool bands = true;
-float ditherAmount = 0.5;
-float lightBooster = 0.2;
+uniform float ambientLight = 0.05;
+uniform float lightRotationPerSecond = 0.01;
+uniform bool bands = true;
+uniform float ditherAmount = 0.5;
+uniform float lightBooster = 0.2;
+
+//colours
+uniform vec3 space = vec3(0.0, 0.0, 0.0);
+uniform vec3 ocean = vec3(0.0, 0.3, 0.6);
+uniform vec3 sand  = vec3(0.8, 0.7, 0.5);
+uniform vec3 land  = vec3(0.1, 0.6, 0.2);
+uniform vec4 cloud = vec4(1.0, 1.0, 1.0, 0.8);
 
 out vec4 fragColor;
-
-vec3 space = vec3(0.0, 0.0, 0.0);
-vec3 ocean = vec3(0.0, 0.3, 0.6);
-vec3 sand = vec3(0.8, 0.7, 0.5);
-vec3 land = vec3(0.1, 0.6, 0.2);
-vec4 cloud = vec4(1.0, 1.0, 1.0, 0.8);
 
 void main() {
 

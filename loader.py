@@ -16,6 +16,39 @@ VERT = """
 in vec2 in_pos;
 void main() { gl_Position = vec4(in_pos, 0.0, 1.0); }
 """
+
+SETTINGS = {
+    # general
+    "pixelCount": 100,
+ 
+    # planet
+    "radius": 0.7,
+ 
+    # clouds
+    "cloudRadius": 0.75,
+    "cloudCoverage": 0.5,
+    "cloudRotationsPerSecond": 0.015,
+    "cloudDriftPerSecond": 0.05,
+ 
+    # surface
+    "waterCoverage": 0.5,
+    "sandCoverage": 0.02,
+    "rotationsPerSecond": 0.01,
+ 
+    # light
+    "ambientLight": 0.05,
+    "lightRotationPerSecond": 0.01,
+    "bands": True,
+    "ditherAmount": 0.5,
+    "lightBooster": 0.2,
+ 
+    # colours
+    "space": (0.0, 0.0, 0.0),
+    "ocean": (0.0, 0.3, 0.6),
+    "sand": (0.8, 0.7, 0.5),
+    "land": (0.1, 0.6, 0.2),
+    "cloud": (1.0, 1.0, 1.0, 0.8),
+}
  
 pygame.init()
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
@@ -49,7 +82,9 @@ def set_uniform(prog, name, value):
  
  
 
-def render():
+def render(settings=None):
+    if settings is None:
+        settings = SETTINGS
     prog, vao = load_shader()
     mtime = os.path.getmtime(FRAG_PATH)
     random.seed(0)
@@ -79,6 +114,8 @@ def render():
         set_uniform(prog, "iResolution", (float(W), float(H)))
         set_uniform(prog, "iTime", time.time() - start)
         set_uniform(prog, "seed", seed)
+        for name, value in settings.items():
+            set_uniform(prog, name, value)
     
         ctx.clear()
         vao.render(moderngl.TRIANGLE_STRIP)
