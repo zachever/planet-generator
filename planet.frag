@@ -19,6 +19,13 @@ float waterCoverage = 0.5;
 float sandCoverage = 0.02;
 float rotationsPerSecond = 0.01;
 
+//light settings
+float ambientLight = 0.05;
+float lightRotationPerSecond = 0.01;
+bool bands = true;
+float ditherAmount = 0.5;
+float lightBooster = 0.2;
+
 out vec4 fragColor;
 
 vec3 space = vec3(0.0, 0.0, 0.0);
@@ -71,6 +78,7 @@ void main() {
         if(!isInsidePlanet) {
             vec3 tempPos = vec3(p, -z) / cloudRadius;
             tempPos = rotY(-iTime * cloudRotationsPerSecond * 2 * 3.14159265358979323846264338327950) * tempPos;
+            tempPos += vec3(0.0, 0.0, iTime * cloudDriftPerSecond);
             h = fbm(tempPos * 2.5 + seed + 1);
             if(h < cloudCoverage) {
                 vec3 rgb = mix(fragColor.rgb, cloud.rgb, cloud.a);
@@ -78,4 +86,17 @@ void main() {
             }
         }
     }
+
+    vec3 lightDirection = normalize(vec3(1.0, 0.3, 0.3));
+    lightDirection = mat3(rotY(-iTime * lightRotationPerSecond * 2 * 3.14159265358979323846264338327950)) * lightDirection;
+
+    pos = vec3(p, z) / radius;
+    vec3 normal = normalize(pos);
+    
+    vec2 cell = floor(p * float(pixelCount) + 0.5); 
+    float diffuse = max(min(dot(normal, lightDirection) + lightBooster, 1.0), ambientLight);
+    if (bands) {
+        diffuse = max(floor(min((dot(normal, lightDirection) + lightBooster), 1.0) * 3.0 + bayer4(cell) * ditherAmount) / 3.0, ambientLight);
+    }
+    fragColor.rgb *= diffuse;
 }
